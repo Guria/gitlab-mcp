@@ -763,9 +763,6 @@ export const GitLabSearchMergeRequestsResponseSchema = BaseSearchResponseSchema.
   items: z.array(GitLabMergeRequestSchema),
 });
 
-// Backward-compatible alias
-export const GitLabSearchResponseSchema = GitLabSearchProjectsResponseSchema;
-
 export const LineRangeSchema = z
   .object({
     start: z
@@ -1980,7 +1977,6 @@ export type CreateIssueOptions = z.infer<typeof CreateIssueOptionsSchema>;
 export type CreateMergeRequestOptions = z.infer<typeof CreateMergeRequestOptionsSchema>;
 export type CreateBranchOptions = z.infer<typeof CreateBranchOptionsSchema>;
 export type GitLabCreateUpdateFileResponse = z.infer<typeof GitLabCreateUpdateFileResponseSchema>;
-export type GitLabSearchResponse = z.infer<typeof GitLabSearchResponseSchema>;
 export type GitLabMergeRequestDiff = z.infer<typeof GitLabDiffSchema>;
 export type CreateNoteOptions = z.infer<typeof CreateNoteSchema>;
 export type GitLabIssueLink = z.infer<typeof GitLabIssueLinkSchema>;

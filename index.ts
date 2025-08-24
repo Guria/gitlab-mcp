@@ -128,8 +128,6 @@ import {
   GitLabReferenceSchema,
   type GitLabRepository,
   GitLabRepositorySchema,
-  type GitLabSearchResponse,
-  GitLabSearchResponseSchema,
   type GitLabTree,
   type GitLabTreeItem,
   GitLabTreeItemSchema,
@@ -1974,13 +1972,13 @@ async function createCommit(
  * @param {string} query - The search query
  * @param {number} [page=1] - The page number
  * @param {number} [perPage=20] - Number of items per page
- * @returns {Promise<GitLabSearchResponse>} The search results
+ * @returns {Promise<z.infer<typeof GitLabSearchProjectsResponseSchema>>} The search results
  */
 async function searchProjects(
   query: string,
   page: number = 1,
   perPage: number = 20
-): Promise<GitLabSearchResponse> {
+): Promise<z.infer<typeof GitLabSearchProjectsResponseSchema>> {
   const url = new URL(`${GITLAB_API_URL}/projects`);
   url.searchParams.append("search", query);
   url.searchParams.append("page", page.toString());
@@ -2004,7 +2002,7 @@ async function searchProjects(
   // GitLab API doesn't return these headers for results > 10,000
   const count = totalCount ? parseInt(totalCount) : projects.length;
 
-  return GitLabSearchResponseSchema.parse({
+  return GitLabSearchProjectsResponseSchema.parse({
     count,
     total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
     current_page: page,
@@ -2017,7 +2015,7 @@ async function searchProjects(
  * 그룹 내 프로젝트 검색
  *
  * @param {z.infer<typeof SearchGroupProjectsSchema>} options - The search options
- * @returns {Promise<GitLabSearchResponse>} The search results
+ * @returns {Promise<z.infer<typeof GitLabSearchProjectsResponseSchema>>} The search results
  */
 async function searchGroupProjects(
   options: z.infer<typeof SearchGroupProjectsSchema>
