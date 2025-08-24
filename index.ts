@@ -181,6 +181,9 @@ import {
   PushFilesSchema,
   RetryPipelineSchema,
   SearchRepositoriesSchema,
+  SearchGroupProjectsSchema,
+  SearchGroupIssuesSchema,
+  SearchGroupMergeRequestsSchema,
   UpdateDraftNoteSchema,
   UpdateIssueNoteSchema,
   UpdateIssueSchema,
@@ -409,6 +412,21 @@ const allTools = [
     name: "search_repositories",
     description: "Search for GitLab projects",
     inputSchema: zodToJsonSchema(SearchRepositoriesSchema),
+  },
+  {
+    name: "search_group_projects",
+    description: "Search for projects within a specific GitLab group",
+    inputSchema: zodToJsonSchema(SearchGroupProjectsSchema),
+  },
+  {
+    name: "search_group_issues",
+    description: "Search for issues within a specific GitLab group",
+    inputSchema: zodToJsonSchema(SearchGroupIssuesSchema),
+  },
+  {
+    name: "search_group_merge_requests",
+    description: "Search for merge requests within a specific GitLab group",
+    inputSchema: zodToJsonSchema(SearchGroupMergeRequestsSchema),
   },
   {
     name: "create_repository",
@@ -821,6 +839,9 @@ const allTools = [
 // Define which tools are read-only
 const readOnlyTools = [
   "search_repositories",
+  "search_group_projects",
+  "search_group_issues", 
+  "search_group_merge_requests",
   "get_file_contents",
   "get_merge_request",
   "get_merge_request_diffs",
@@ -1985,6 +2006,143 @@ async function searchProjects(
     total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
     current_page: page,
     items: projects,
+  });
+}
+
+/**
+ * Search for projects within a specific GitLab group
+ * 그룹 내 프로젝트 검색
+ *
+ * @param {z.infer<typeof SearchGroupProjectsSchema>} options - The search options
+ * @returns {Promise<GitLabSearchResponse>} The search results
+ */
+async function searchGroupProjects(
+  options: z.infer<typeof SearchGroupProjectsSchema>
+): Promise<GitLabSearchResponse> {
+  const url = new URL(`${GITLAB_API_URL}/groups/${encodeURIComponent(options.group_id)}/projects`);
+  url.searchParams.append("search", options.search);
+  
+  // Add optional parameters
+  if (options.page) url.searchParams.append("page", options.page.toString());
+  if (options.per_page) url.searchParams.append("per_page", options.per_page.toString());
+  if (options.include_subgroups) url.searchParams.append("include_subgroups", "true");
+  if (options.order_by) url.searchParams.append("order_by", options.order_by);
+  if (options.sort) url.searchParams.append("sort", options.sort);
+
+  const response = await fetch(url.toString(), {
+    ...DEFAULT_FETCH_CONFIG,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`GitLab API error: ${response.status} ${response.statusText}\n${errorBody}`);
+  }
+
+  const projects = (await response.json()) as GitLabRepository[];
+  const totalCount = response.headers.get("x-total");
+  const totalPages = response.headers.get("x-total-pages");
+
+  const count = totalCount ? parseInt(totalCount) : projects.length;
+  const page = options.page || 1;
+  const perPage = options.per_page || 20;
+
+  return GitLabSearchResponseSchema.parse({
+    count,
+    total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
+    current_page: page,
+    items: projects,
+  });
+}
+
+/**
+ * Search for issues within a specific GitLab group
+ * 그룹 내 이슈 검색
+ *
+ * @param {z.infer<typeof SearchGroupIssuesSchema>} options - The search options
+ * @returns {Promise<GitLabSearchResponse>} The search results
+ */
+async function searchGroupIssues(
+  options: z.infer<typeof SearchGroupIssuesSchema>
+): Promise<GitLabSearchResponse> {
+  const url = new URL(`${GITLAB_API_URL}/groups/${encodeURIComponent(options.group_id)}/issues`);
+  url.searchParams.append("search", options.search);
+  
+  // Add optional parameters
+  if (options.page) url.searchParams.append("page", options.page.toString());
+  if (options.per_page) url.searchParams.append("per_page", options.per_page.toString());
+  if (options.include_subgroups) url.searchParams.append("include_subgroups", "true");
+  if (options.state) url.searchParams.append("state", options.state);
+  if (options.order_by) url.searchParams.append("order_by", options.order_by);
+  if (options.sort) url.searchParams.append("sort", options.sort);
+
+  const response = await fetch(url.toString(), {
+    ...DEFAULT_FETCH_CONFIG,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`GitLab API error: ${response.status} ${response.statusText}\n${errorBody}`);
+  }
+
+  const issues = (await response.json()) as GitLabIssue[];
+  const totalCount = response.headers.get("x-total");
+  const totalPages = response.headers.get("x-total-pages");
+
+  const count = totalCount ? parseInt(totalCount) : issues.length;
+  const page = options.page || 1;
+  const perPage = options.per_page || 20;
+
+  return GitLabSearchResponseSchema.parse({
+    count,
+    total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
+    current_page: page,
+    items: issues,
+  });
+}
+
+/**
+ * Search for merge requests within a specific GitLab group
+ * 그룹 내 머지 리퀘스트 검색
+ *
+ * @param {z.infer<typeof SearchGroupMergeRequestsSchema>} options - The search options
+ * @returns {Promise<GitLabSearchResponse>} The search results
+ */
+async function searchGroupMergeRequests(
+  options: z.infer<typeof SearchGroupMergeRequestsSchema>
+): Promise<GitLabSearchResponse> {
+  const url = new URL(`${GITLAB_API_URL}/groups/${encodeURIComponent(options.group_id)}/merge_requests`);
+  url.searchParams.append("search", options.search);
+  
+  // Add optional parameters
+  if (options.page) url.searchParams.append("page", options.page.toString());
+  if (options.per_page) url.searchParams.append("per_page", options.per_page.toString());
+  if (options.include_subgroups) url.searchParams.append("include_subgroups", "true");
+  if (options.state) url.searchParams.append("state", options.state);
+  if (options.order_by) url.searchParams.append("order_by", options.order_by);
+  if (options.sort) url.searchParams.append("sort", options.sort);
+
+  const response = await fetch(url.toString(), {
+    ...DEFAULT_FETCH_CONFIG,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`GitLab API error: ${response.status} ${response.statusText}\n${errorBody}`);
+  }
+
+  const mergeRequests = (await response.json()) as GitLabMergeRequest[];
+  const totalCount = response.headers.get("x-total");
+  const totalPages = response.headers.get("x-total-pages");
+
+  const count = totalCount ? parseInt(totalCount) : mergeRequests.length;
+  const page = options.page || 1;
+  const perPage = options.per_page || 20;
+
+  return GitLabSearchResponseSchema.parse({
+    count,
+    total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
+    current_page: page,
+    items: mergeRequests,
   });
 }
 
@@ -4207,6 +4365,30 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
       case "search_repositories": {
         const args = SearchRepositoriesSchema.parse(request.params.arguments);
         const results = await searchProjects(args.search, args.page, args.per_page);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "search_group_projects": {
+        const args = SearchGroupProjectsSchema.parse(request.params.arguments);
+        const results = await searchGroupProjects(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "search_group_issues": {
+        const args = SearchGroupIssuesSchema.parse(request.params.arguments);
+        const results = await searchGroupIssues(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "search_group_merge_requests": {
+        const args = SearchGroupMergeRequestsSchema.parse(request.params.arguments);
+        const results = await searchGroupMergeRequests(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };

@@ -980,6 +980,48 @@ export const SearchRepositoriesSchema = z
   })
   .merge(PaginationOptionsSchema);
 
+// Group-scoped search schemas
+export const SearchGroupProjectsSchema = z
+  .object({
+    group_id: z.coerce.string().describe("Group ID or path"),
+    search: z.string().describe("Search query for projects within the group"),
+    include_subgroups: flexibleBoolean.optional().describe("Include projects from subgroups"),
+    order_by: z
+      .enum(["id", "name", "path", "created_at", "updated_at", "last_activity_at"])
+      .optional()
+      .describe("Field to sort projects by"),
+    sort: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
+  })
+  .merge(PaginationOptionsSchema);
+
+export const SearchGroupIssuesSchema = z
+  .object({
+    group_id: z.coerce.string().describe("Group ID or path"),
+    search: z.string().describe("Search query for issues within the group"),
+    include_subgroups: flexibleBoolean.optional().describe("Include issues from subgroups"),
+    state: z.enum(["opened", "closed", "all"]).optional().describe("Filter by issue state"),
+    order_by: z
+      .enum(["created_at", "updated_at", "priority", "due_date", "relative_position", "label_priority", "milestone_due", "popularity", "weight"])
+      .optional()
+      .describe("Field to sort issues by"),
+    sort: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
+  })
+  .merge(PaginationOptionsSchema);
+
+export const SearchGroupMergeRequestsSchema = z
+  .object({
+    group_id: z.coerce.string().describe("Group ID or path"),
+    search: z.string().describe("Search query for merge requests within the group"),
+    include_subgroups: flexibleBoolean.optional().describe("Include merge requests from subgroups"),
+    state: z.enum(["opened", "closed", "locked", "merged", "all"]).optional().describe("Filter by merge request state"),
+    order_by: z
+      .enum(["created_at", "updated_at", "priority", "label_priority", "milestone_due", "popularity"])
+      .optional()
+      .describe("Field to sort merge requests by"),
+    sort: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
+  })
+  .merge(PaginationOptionsSchema);
+
 export const CreateRepositorySchema = z.object({
   name: z.string().describe("Repository name"),
   description: z.string().optional().describe("Repository description"),
