@@ -184,6 +184,9 @@ import {
   SearchGroupProjectsSchema,
   SearchGroupIssuesSchema,
   SearchGroupMergeRequestsSchema,
+  GitLabSearchProjectsResponseSchema,
+  GitLabSearchIssuesResponseSchema,
+  GitLabSearchMergeRequestsResponseSchema,
   UpdateDraftNoteSchema,
   UpdateIssueNoteSchema,
   UpdateIssueSchema,
@@ -2018,7 +2021,7 @@ async function searchProjects(
  */
 async function searchGroupProjects(
   options: z.infer<typeof SearchGroupProjectsSchema>
-): Promise<GitLabSearchResponse> {
+): Promise<z.infer<typeof GitLabSearchProjectsResponseSchema>> {
   const url = new URL(`${GITLAB_API_URL}/groups/${encodeURIComponent(options.group_id)}/projects`);
   url.searchParams.append("search", options.search);
   
@@ -2046,7 +2049,7 @@ async function searchGroupProjects(
   const page = options.page || 1;
   const perPage = options.per_page || 20;
 
-  return GitLabSearchResponseSchema.parse({
+  return GitLabSearchProjectsResponseSchema.parse({
     count,
     total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
     current_page: page,
@@ -2059,11 +2062,11 @@ async function searchGroupProjects(
  * 그룹 내 이슈 검색
  *
  * @param {z.infer<typeof SearchGroupIssuesSchema>} options - The search options
- * @returns {Promise<GitLabSearchResponse>} The search results
+ * @returns {Promise<z.infer<typeof GitLabSearchIssuesResponseSchema>>} The search results
  */
 async function searchGroupIssues(
   options: z.infer<typeof SearchGroupIssuesSchema>
-): Promise<GitLabSearchResponse> {
+): Promise<z.infer<typeof GitLabSearchIssuesResponseSchema>> {
   const url = new URL(`${GITLAB_API_URL}/groups/${encodeURIComponent(options.group_id)}/issues`);
   url.searchParams.append("search", options.search);
   
@@ -2092,7 +2095,7 @@ async function searchGroupIssues(
   const page = options.page || 1;
   const perPage = options.per_page || 20;
 
-  return GitLabSearchResponseSchema.parse({
+  return GitLabSearchIssuesResponseSchema.parse({
     count,
     total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
     current_page: page,
@@ -2105,11 +2108,11 @@ async function searchGroupIssues(
  * 그룹 내 머지 리퀘스트 검색
  *
  * @param {z.infer<typeof SearchGroupMergeRequestsSchema>} options - The search options
- * @returns {Promise<GitLabSearchResponse>} The search results
+ * @returns {Promise<z.infer<typeof GitLabSearchMergeRequestsResponseSchema>>} The search results
  */
 async function searchGroupMergeRequests(
   options: z.infer<typeof SearchGroupMergeRequestsSchema>
-): Promise<GitLabSearchResponse> {
+): Promise<z.infer<typeof GitLabSearchMergeRequestsResponseSchema>> {
   const url = new URL(`${GITLAB_API_URL}/groups/${encodeURIComponent(options.group_id)}/merge_requests`);
   url.searchParams.append("search", options.search);
   
@@ -2138,7 +2141,7 @@ async function searchGroupMergeRequests(
   const page = options.page || 1;
   const perPage = options.per_page || 20;
 
-  return GitLabSearchResponseSchema.parse({
+  return GitLabSearchMergeRequestsResponseSchema.parse({
     count,
     total_pages: totalPages ? parseInt(totalPages) : Math.ceil(count / perPage),
     current_page: page,

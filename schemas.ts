@@ -589,13 +589,6 @@ export const GitLabCreateUpdateFileResponseSchema = z.object({
   content: GitLabFileContentSchema.optional(),
 });
 
-export const GitLabSearchResponseSchema = z.object({
-  count: z.number().optional(),
-  total_pages: z.number().optional(),
-  current_page: z.number().optional(),
-  items: z.array(GitLabRepositorySchema),
-});
-
 // create branch schemas
 export const CreateBranchOptionsSchema = z.object({
   name: z.string(), // Changed from ref to match GitLab API
@@ -749,6 +742,29 @@ export const GitLabMergeRequestSchema = z.object({
   squash: flexibleBoolean.optional(),
   labels: z.array(z.string()).optional(),
 });
+
+// Generic search response base
+export const BaseSearchResponseSchema = z.object({
+  count: z.number().optional(),
+  total_pages: z.number().optional(),
+  current_page: z.number().optional(),
+});
+
+// Search response variants
+export const GitLabSearchProjectsResponseSchema = BaseSearchResponseSchema.extend({
+  items: z.array(GitLabRepositorySchema),
+});
+
+export const GitLabSearchIssuesResponseSchema = BaseSearchResponseSchema.extend({
+  items: z.array(GitLabIssueSchema),
+});
+
+export const GitLabSearchMergeRequestsResponseSchema = BaseSearchResponseSchema.extend({
+  items: z.array(GitLabMergeRequestSchema),
+});
+
+// Backward-compatible alias
+export const GitLabSearchResponseSchema = GitLabSearchProjectsResponseSchema;
 
 export const LineRangeSchema = z
   .object({
@@ -987,7 +1003,7 @@ export const SearchGroupProjectsSchema = z
     search: z.string().describe("Search query for projects within the group"),
     include_subgroups: flexibleBoolean.optional().describe("Include projects from subgroups"),
     order_by: z
-      .enum(["id", "name", "path", "created_at", "updated_at", "last_activity_at"])
+      .enum(["created_at", "updated_at", "name", "path"])
       .optional()
       .describe("Field to sort projects by"),
     sort: z.enum(["asc", "desc"]).optional().describe("Sort direction"),
